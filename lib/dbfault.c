@@ -1,5 +1,5 @@
-// User-level double fault handler support.
-// Rather than register the C double fault handler directly with the
+// User-level dbfault handler support.
+// Rather than register the C dbfault handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in dfentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _dbfault_upcall(void);
 void (*_dbfault_handler)(struct UTrapframe *utf);
 
 //
-// Set the double fault handler function.
+// Set the dbfault handler function.
 // If there isn't one yet, _dbfault_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _dbfault_upcall routine when a double fault occurs.
+// _dbfault_upcall routine when a dbfault occurs.
 //
 void
 set_dbfault_handler(void (*handler)(struct UTrapframe *utf))

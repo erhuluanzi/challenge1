@@ -1,5 +1,5 @@
-// User-level bounds check handler support.
-// Rather than register the C bounds check handler directly with the
+// User-level bdschk handler support.
+// Rather than register the C bdschk handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in bcentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _bdschk_upcall(void);
 void (*_bdschk_handler)(struct UTrapframe *utf);
 
 //
-// Set the bounds check handler function.
+// Set the bdschk handler function.
 // If there isn't one yet, _bdschk_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _bdschk_upcall routine when a bounds check occurs.
+// _bdschk_upcall routine when a bdschk occurs.
 //
 void
 set_bdschk_handler(void (*handler)(struct UTrapframe *utf))

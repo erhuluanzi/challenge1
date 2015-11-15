@@ -1,10 +1,10 @@
-// double fault upcall entrypoint.
+// dbfault upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _dbfault_upcall
-_divzero_upcall:
+_dbfault_upcall:
     // call the C dbfault handler
     pushl %esp
     movl _dbfault_handler, %eax

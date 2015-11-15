@@ -1,10 +1,10 @@
-// stack exception upcall entrypoint.
+// stkexception upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _stkexception_upcall
-_divzero_upcall:
+_stkexception_upcall:
     // call the C stkexception handler
     pushl %esp
     movl _stkexception_handler, %eax

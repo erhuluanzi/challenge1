@@ -1,10 +1,10 @@
-// bounds check upcall entrypoint.
+// bdschk upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _bdschk_upcall
-_divzero_upcall:
+_bdschk_upcall:
     // call the C bdschk handler
     pushl %esp
     movl _bdschk_handler, %eax

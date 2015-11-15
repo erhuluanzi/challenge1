@@ -1,10 +1,10 @@
-// device not available upcall entrypoint.
+// dvcntavl upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _dvcntavl_upcall
-_divzero_upcall:
+_dvcntavl_upcall:
     // call the C dvcntavl handler
     pushl %esp
     movl _dvcntavl_handler, %eax

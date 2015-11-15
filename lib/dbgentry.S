@@ -1,10 +1,10 @@
-// debug exception upcall entrypoint.
+// debug upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _debug_upcall
-_divzero_upcall:
+_debug_upcall:
     // call the C debug handler
     pushl %esp
     movl _debug_handler, %eax

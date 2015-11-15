@@ -1,10 +1,10 @@
-// floating point error upcall entrypoint.
+// fperror upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _fperror_upcall
-_divzero_upcall:
+_fperror_upcall:
     // call the C fperror handler
     pushl %esp
     movl _fperror_handler, %eax

@@ -1,10 +1,10 @@
-// breakpoint upcall entrypoint.
+// bpoint upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _bpoint_upcall
-_divzero_upcall:
+_bpoint_upcall:
     // call the C bpoint handler
     pushl %esp
     movl _bpoint_handler, %eax

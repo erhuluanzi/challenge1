@@ -1,10 +1,10 @@
-// aligment check upcall entrypoint.
+// algchk upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _algchk_upcall
-_divzero_upcall:
+_algchk_upcall:
     // call the C algchk handler
     pushl %esp
     movl _algchk_handler, %eax

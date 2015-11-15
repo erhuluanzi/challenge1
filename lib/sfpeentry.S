@@ -1,10 +1,10 @@
-// SIMD floating point error upcall entrypoint.
+// SIMDfperror upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _SIMDfperror_upcall
-_divzero_upcall:
+_SIMDfperror_upcall:
     // call the C SIMDfperror handler
     pushl %esp
     movl _SIMDfperror_handler, %eax

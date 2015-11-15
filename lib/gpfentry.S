@@ -1,10 +1,10 @@
-// general protection fault upcall entrypoint.
+// gpfault upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _gpfault_upcall
-_divzero_upcall:
+_gpfault_upcall:
     // call the C gpfault handler
     pushl %esp
     movl _gpfault_handler, %eax

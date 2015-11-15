@@ -1,5 +1,5 @@
-// User-level floating point error handler support.
-// Rather than register the C floating point error handler directly with the
+// User-level fperror handler support.
+// Rather than register the C fperror handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in fpeentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _fperror_upcall(void);
 void (*_fperror_handler)(struct UTrapframe *utf);
 
 //
-// Set the floating point error handler function.
+// Set the fperror handler function.
 // If there isn't one yet, _fperror_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _fperror_upcall routine when a floating point error occurs.
+// _fperror_upcall routine when a fperror occurs.
 //
 void
 set_fperror_handler(void (*handler)(struct UTrapframe *utf))

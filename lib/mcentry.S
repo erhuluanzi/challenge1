@@ -1,10 +1,10 @@
-// machine check upcall entrypoint.
+// mchchk upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _mchchk_upcall
-_divzero_upcall:
+_mchchk_upcall:
     // call the C mchchk handler
     pushl %esp
     movl _mchchk_handler, %eax

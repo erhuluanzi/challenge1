@@ -1,10 +1,10 @@
-// non_maskable interrupt upcall entrypoint.
+// nmskint upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _nmskint_upcall
-_divzero_upcall:
+_nmskint_upcall:
     // call the C nmskint handler
     pushl %esp
     movl _nmskint_handler, %eax

@@ -1,5 +1,5 @@
-// User-level invalid task switch segment handler support.
-// Rather than register the C invalid task switch segment handler directly with the
+// User-level ivldtss handler support.
+// Rather than register the C ivldtss handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in tssentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _ivldtss_upcall(void);
 void (*_ivldtss_handler)(struct UTrapframe *utf);
 
 //
-// Set the invalid task switch segment handler function.
+// Set the ivldtss handler function.
 // If there isn't one yet, _ivldtss_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _ivldtss_upcall routine when a invalid task switch segment occurs.
+// _ivldtss_upcall routine when a ivldtss occurs.
 //
 void
 set_ivldtss_handler(void (*handler)(struct UTrapframe *utf))

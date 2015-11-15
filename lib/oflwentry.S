@@ -1,10 +1,10 @@
-// overflow upcall entrypoint.
+// oflow upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _oflow_upcall
-_divzero_upcall:
+_oflow_upcall:
     // call the C oflow handler
     pushl %esp
     movl _oflow_handler, %eax

@@ -1,10 +1,10 @@
-// segment not present upcall entrypoint.
+// segntprst upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _segntprst_upcall
-_divzero_upcall:
+_segntprst_upcall:
     // call the C segntprst handler
     pushl %esp
     movl _segntprst_handler, %eax

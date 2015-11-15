@@ -1,10 +1,10 @@
-// invalid task switch segment upcall entrypoint.
+// ivldtss upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _ivldtss_upcall
-_divzero_upcall:
+_ivldtss_upcall:
     // call the C ivldtss handler
     pushl %esp
     movl _ivldtss_handler, %eax

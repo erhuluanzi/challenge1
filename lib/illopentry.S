@@ -1,10 +1,10 @@
-// illegal opcode upcall entrypoint.
+// illopcd upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 
 .text
 .globl _illopcd_upcall
-_divzero_upcall:
+_illopcd_upcall:
     // call the C illopcd handler
     pushl %esp
     movl _illopcd_handler, %eax

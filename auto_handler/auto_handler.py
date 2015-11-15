@@ -134,7 +134,7 @@ ref6 = \
 
 .text
 .globl _%s_upcall
-_divzero_upcall:
+_%s_upcall:
     // call the C %s handler
     pushl %%esp
     movl _%s_handler, %%eax
@@ -198,7 +198,7 @@ patterns = [
     # 写一个divzero_handler()函数，分派时处理divzero exception
     ('kern/trap.c', "()", ref5, "(item[0].replace(' ', '_'), item[0], item[0], item[1], item[1])"),
     # lib/divzentry.S 这是个庞大的工程，要仿照lib/pfentry.S写一个，起到统一提供接口的目的
-    ('lib/%sentry.S', "(item[2])", ref6, "(item[0], item[1], item[1], item[1])"),
+    ('lib/%sentry.S', "(item[2])", ref6, "(item[0], item[1], item[1], item[1], item[1])"),
     # lib/Makefrag 在LIB_SRCFILES条目中增加 lib/divzero.c 和 lib/divzentry.S 这样才能够在编译时加进去我们的新文件
     ('lib/Makefrag', "()", '\t\t\tlib/%s.c \\\n\t\t\tlib/%sentry.S \\', "(item[1], item[2])"),
     # lib/syscall.c 增加一个库包装系统调用int sys_env_set_divzero_upcall(envid_t envid, void *upcall)
