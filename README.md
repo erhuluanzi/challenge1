@@ -29,11 +29,11 @@
 	- 修改`trap_dispatch()`函数，增加一个divzero的case
 	- 写一个`divzero_handler()`函数，分派时处理divzero exception
 
-* lib/Makefrag
-	在LIB_SRCFILES条目中增加一条 lib/divzero.c这样才能够在编译时加进去我们的新文件 
-
 * lib/divzentry.S
 	这是个庞大的工程，要仿照lib/pfentry.S写一个，起到统一提供接口的目的
+
+* lib/Makefrag
+	在LIB_SRCFILES条目中增加 lib/divzero.c 和 lib/divzentry.S 这样才能够在编译时加进去我们的新文件 
 
 * lib/syscall.c
 	增加一个库包装系统调用`int sys_env_set_divzero_upcall(envid_t envid, void *upcall)`
