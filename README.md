@@ -22,6 +22,9 @@
 	- 写好`sys_env_set_divzero_upcall`的函数定义，类似pgfault写
 	- 记得在syscall()函数中增加一个case进行分派
 
+* kern/trap.h
+	写`divide_zero_handler()`的函数声明
+
 * kern/trap.c
 	- 修改`trap_dispatch()`函数，增加一个divzero的case
 	- 写一个`divzero_handler()`函数，分派时处理divzero exception
