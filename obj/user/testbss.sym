@@ -1,7 +1,7 @@
 00200010 R __STAB_BEGIN__
-0020367c R __STAB_END__
-0020367d R __STABSTR_BEGIN__
-0020c3fb R __STABSTR_END__
+002036f4 R __STAB_END__
+002036f5 R __STABSTR_BEGIN__
+0020c4d4 R __STABSTR_END__
 00800020 T _start
 0080002c t args_exist
 00800034 T umain
@@ -47,9 +47,10 @@
 00800d46 T sys_env_set_pgfault_upcall
 00800d99 T sys_ipc_try_send
 00800dbc T sys_ipc_recv
-00800e10 T __udivdi3
-00800f30 T __umoddi3
-00801380 r error_string
+00800e0e T sys_env_set_divzero_upcall
+00800e64 T __udivdi3
+00800f84 T __umoddi3
+008013e0 r error_string
 00802000 D binaryname
 00802004 D console_color
 00802020 B bigarray

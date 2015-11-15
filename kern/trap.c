@@ -235,6 +235,8 @@ trap_dispatch(struct Trapframe *tf)
 	// LAB 3: Your code here.
 
 	switch (tf->tf_trapno) {
+	case T_DIVIDE:
+		divide_zero_handler(tf);
 	case T_PGFLT:
 		page_fault_handler(tf);
 		return;
@@ -409,3 +411,34 @@ page_fault_handler(struct Trapframe *tf)
 	env_destroy(curenv);
 }
 
+void divide_zero_handler(struct Trapframe *tf) {
+	uint32_t fault_va;
+	// Read processor's CR2 register to find the faulting address
+	fault_va = rcr2();
+	// handle kernel mode divide zero exception
+	if ((tf->tf_cs & 3) == 0)
+		panic("divide zero exception in kernel mode!");
+	if (curenv->env_divzero_upcall) {
+		struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+							(struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+							(struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+		// this is a totally wrong statement!
+		// struct UTrapframe *utf = (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4);
+		user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+		utf->utf_fault_va = fault_va;
+		utf->utf_err = tf->tf_err;
+		utf->utf_regs = tf->tf_regs;
+		utf->utf_eip = tf->tf_eip;
+		utf->utf_eflags = tf->tf_eflags;
+		utf->utf_esp = tf->tf_esp;
+		curenv->env_tf.tf_eip = (uintptr_t)curenv->env_divzero_upcall;
+		curenv->env_tf.tf_esp = (uintptr_t)utf;
+		env_run(curenv);
+	}
+
+	// Destroy the environment that caused the fault.
+	//cprintf("[%08x] user fault va %08x ip %08x\n",
+	//	curenv->env_id, fault_va, tf->tf_eip);
+	//print_trapframe(tf);
+	//env_destroy(curenv);
+}
