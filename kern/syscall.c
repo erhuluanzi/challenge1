@@ -322,17 +322,18 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 		return r;
 	if (!e->env_ipc_recving) {
 		// If waiting queue is not full
-		cprintf("env %x is busy: ", e->env_id);
+		// cprintf("env %x is busy: ", e->env_id);
 		if ((e->env_ipc_waiting_tail + 1) % MAXIPCWAITING != e->env_ipc_waiting_head) {
 			// Block the sender
-			cprintf("env %x is put in waiting queue.\n", curenv->env_id);
+			// cprintf("env %x is put in waiting queue.\n", curenv->env_id);
 			curenv->env_status = ENV_NOT_RUNNABLE;
 			e->env_ipc_waiting[e->env_ipc_waiting_tail] = curenv->env_id;
 			e->env_ipc_waiting_tail = (e->env_ipc_waiting_tail + 1) % MAXIPCWAITING;
 		}
 		else
-			cprintf("waiting queue is full.\n");
-		cprintf("Waiting envs: ");
+            ;
+			// cprintf("waiting queue is full.\n");
+		//cprintf("Waiting envs: ");
 		int i;
 		for (i = 0; i < MAXIPCWAITING; i++)
 			cprintf("%x ", e->env_ipc_waiting[(i + e->env_ipc_waiting_head) % MAXIPCWAITING]);
@@ -395,7 +396,7 @@ sys_ipc_recv(void *dstva)
 		if ((r = envid2env(envid, &e, 0)) < 0)
 			return r;
 		e->env_status = ENV_RUNNABLE;
-		cprintf("Wake up env %x.\n", e->env_id);
+		// cprintf("Wake up env %x.\n", e->env_id);
 	}
 	sys_yield();
 	return 0;
