@@ -173,7 +173,7 @@ sys_env_set_%s_upcall(envid_t envid, void *upcall) {
 
 patterns = [
     # inc/env.h 在Env结构体中增加一个入口函数指针 void *env_divzero_upcall;
-    ('inc/env.h', "()", 'void *env_%s_upcall;' , "(item[0].replace(' ', '_'))"),
+    ('inc/env.h', "()", 'void *env_%s_upcall;' , "(item[1])"),
     # lib/divzero.c 这是新加的一个库文件，目的是要提供对用户的接口，里面需要有 set_divzero_handler函数
     ('lib/%s.c' , "(item[1])", ref1, "(item[0], item[0], item[2], item[2], item[1], item[1], \
         item[1], item[1], item[0], item[1], item[1], item[0], item[1], item[1], item[1], item[1], \
