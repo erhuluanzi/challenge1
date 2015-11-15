@@ -401,6 +401,199 @@ sys_ipc_recv(void *dstva)
 	return 0;
 }
 
+// set the debug exception exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_debug_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_debug_upcall = func;
+    return 0;
+}
+
+// set the non_maskable interrupt exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_nmskint_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_nmskint_upcall = func;
+    return 0;
+}
+
+// set the breakpoint exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_bpoint_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_bpoint_upcall = func;
+    return 0;
+}
+
+// set the overflow exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_oflow_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_oflow_upcall = func;
+    return 0;
+}
+
+// set the bounds check exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_bdschk_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_bdschk_upcall = func;
+    return 0;
+}
+
+// set the illegal opcode exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_illopcd_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_illopcd_upcall = func;
+    return 0;
+}
+
+// set the device not available exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_dvcntavl_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_dvcntavl_upcall = func;
+    return 0;
+}
+
+// set the double fault exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_dbfault_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_dbfault_upcall = func;
+    return 0;
+}
+
+// set the invalid task switch segment exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_ivldtss_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_ivldtss_upcall = func;
+    return 0;
+}
+
+// set the segment not present exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_segntprst_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_segntprst_upcall = func;
+    return 0;
+}
+
+// set the stack exception exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_stkexception_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_stkexception_upcall = func;
+    return 0;
+}
+
+// set the general protection fault exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_gpfault_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_gpfault_upcall = func;
+    return 0;
+}
+
+// set the floating point error exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_fperror_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_fperror_upcall = func;
+    return 0;
+}
+
+// set the aligment check exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_algchk_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_algchk_upcall = func;
+    return 0;
+}
+
+// set the machine check exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_mchchk_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_mchchk_upcall = func;
+    return 0;
+}
+
+// set the SIMD floating point error exception upcall for 'envid'
+// Returns 0 on success, < 0 on error.
+static int
+sys_env_set_SIMDfperror_upcall(envid_t envid, void *func) {
+    int r;
+    struct Env *e;
+    if ((r = envid2env(envid, &e, 1)) < 0)
+        return r;
+    e->env_SIMDfperror_upcall = func;
+    return 0;
+}
+
+
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
 syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
@@ -440,6 +633,38 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		return sys_ipc_try_send(a1, a2, (void *)a3, a4);
 	case SYS_env_set_divzero_upcall:
 		return sys_env_set_divzero_upcall(a1, (void *)a2);
+	case SYS_env_set_debug_upcall:
+        return sys_env_set_debug_upcall(a1, (void *)a2);
+    case SYS_env_set_nmskint_upcall:
+        return sys_env_set_nmskint_upcall(a1, (void *)a2);
+    case SYS_env_set_bpoint_upcall:
+        return sys_env_set_bpoint_upcall(a1, (void *)a2);
+    case SYS_env_set_oflow_upcall:
+        return sys_env_set_oflow_upcall(a1, (void *)a2);
+    case SYS_env_set_bdschk_upcall:
+        return sys_env_set_bdschk_upcall(a1, (void *)a2);
+    case SYS_env_set_illopcd_upcall:
+        return sys_env_set_illopcd_upcall(a1, (void *)a2);
+    case SYS_env_set_dvcntavl_upcall:
+        return sys_env_set_dvcntavl_upcall(a1, (void *)a2);
+    case SYS_env_set_dbfault_upcall:
+        return sys_env_set_dbfault_upcall(a1, (void *)a2);
+    case SYS_env_set_ivldtss_upcall:
+        return sys_env_set_ivldtss_upcall(a1, (void *)a2);
+    case SYS_env_set_segntprst_upcall:
+        return sys_env_set_segntprst_upcall(a1, (void *)a2);
+    case SYS_env_set_stkexception_upcall:
+        return sys_env_set_stkexception_upcall(a1, (void *)a2);
+    case SYS_env_set_gpfault_upcall:
+        return sys_env_set_gpfault_upcall(a1, (void *)a2);
+    case SYS_env_set_fperror_upcall:
+        return sys_env_set_fperror_upcall(a1, (void *)a2);
+    case SYS_env_set_algchk_upcall:
+        return sys_env_set_algchk_upcall(a1, (void *)a2);
+    case SYS_env_set_mchchk_upcall:
+        return sys_env_set_mchchk_upcall(a1, (void *)a2);
+    case SYS_env_set_SIMDfperror_upcall:
+        return sys_env_set_SIMDfperror_upcall(a1, (void *)a2);
 	default:
 		// should I change it into -E_INVAL?
 		return -E_NO_SYS;

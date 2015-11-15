@@ -61,7 +61,23 @@ struct Env {
 	// Exception handling
 	void *env_pgfault_upcall;	// Page fault upcall entry point
 	void *env_divzero_upcall;	// divzero exception upcall entry point
-
+	// auto add
+	void *env_debug_upcall;
+	void *env_nmskint_upcall;
+	void *env_bpoint_upcall;
+	void *env_oflow_upcall;
+	void *env_bdschk_upcall;
+	void *env_illopcd_upcall;
+	void *env_dvcntavl_upcall;
+	void *env_dbfault_upcall;
+	void *env_ivldtss_upcall;
+	void *env_segntprst_upcall;
+	void *env_stkexception_upcall;
+	void *env_gpfault_upcall;
+	void *env_fperror_upcall;
+	void *env_algchk_upcall;
+	void *env_mchchk_upcall;
+	void *env_SIMDfperror_upcall;
 	// Lab 4 IPC
 	bool env_ipc_recving;		// Env is blocked receiving
 	void *env_ipc_dstva;		// VA at which to map received page

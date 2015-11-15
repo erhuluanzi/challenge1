@@ -1,22 +1,22 @@
 # coding: utf-8
 descriptor = [
-    ('debug exception', 'debug', 'dbg', 'T_DEBUG'),
-    ('non-maskable interrupt', 'nmskint', 'nmi', 'T_NMI'),
-    ('breakpoint', 'bpoint', 'bpt', 'T_BRKPT'),
-    ('overflow', 'oflow', 'oflw', 'T_OFLOW'),
-    ('bounds check', 'bdschk', 'bc', 'T_BOUND'),
-    ('illegal opcode', 'illopcd', 'illop', 'T_ILLOP'),
-    ('device not available', 'dvcntavl', 'dna', 'T_DEVICE'),
-    ('double fault', 'dbfault', 'df', 'T_DBLFLT'),
-    ('invalid task switch segment', 'ivldtss', 'tss', 'T_TSS'),
-    ('segment not present', 'segntprst', 'snp', 'T_SEGNP'),
-    ('stack exception', 'stkexception', 'se', 'T_STACK'),
-    ('general protection fault', 'gpfault', 'gpf', 'T_GPFLT'),
+    ('debug', 'debug', 'dbg', 'T_DEBUG'),
+    ('nmskint', 'nmskint', 'nmi', 'T_NMI'),
+    ('bpoint', 'bpoint', 'bpt', 'T_BRKPT'),
+    ('oflow', 'oflow', 'oflw', 'T_OFLOW'),
+    ('bdschk', 'bdschk', 'bc', 'T_BOUND'),
+    ('illopcd', 'illopcd', 'illop', 'T_ILLOP'),
+    ('dvcntavl', 'dvcntavl', 'dna', 'T_DEVICE'),
+    ('dbfault', 'dbfault', 'df', 'T_DBLFLT'),
+    ('ivldtss', 'ivldtss', 'tss', 'T_TSS'),
+    ('segntprst', 'segntprst', 'snp', 'T_SEGNP'),
+    ('stkexception', 'stkexception', 'se', 'T_STACK'),
+    ('gpfault', 'gpfault', 'gpf', 'T_GPFLT'),
     # ('page fault', 'pgfault', 'pf', 'T_PGFLT'),
-    ('floating point error', 'fperror', 'fpe', 'T_FPERR'),
-    ('aligment check', 'algchk', 'ac', 'T_ALIGN'),
-    ('machine check', 'mchchk', 'mc', 'T_MCHK'),
-    ('SIMD floating point error', 'SIMDfperror', 'sfpe', 'T_SIMDERR'),
+    ('fperror', 'fperror', 'fpe', 'T_FPERR'),
+    ('algchk', 'algchk', 'ac', 'T_ALIGN'),
+    ('mchchk', 'mchchk', 'mc', 'T_MCHK'),
+    ('SIMDfperror', 'SIMDfperror', 'sfpe', 'T_SIMDERR'),
 ]
 
 ref1 = \
@@ -184,7 +184,7 @@ patterns = [
     # inc/lib.h 增加系统调用int sys_env_set_divzero_upcall(envid_t env, void *upcall)用于处理设置divzero的处理函数。
     ('inc/lib.h', "()", 'int sys_env_set_%s_upcall(envid_t env, void *upcall);', "(item[1])"),
     # inc/syscall.h 增加系统调用编号SYS_env_set_divzero_upcall
-    ('inc/syscall.h', "()", 'SYS_env_set_%s_upcall', "(item[1])"),
+    ('inc/syscall.h', "()", 'SYS_env_set_%s_upcall,', "(item[1])"),
     # kern/env.c 在env_alloc()函数中初始化时清空divzero handler直到用户设置一个 e->env_divzero_upcall = 0;
     ('kern/env.c', "()", 'e->env_%s_upcall = 0;', "(item[1])"),
     # kern/syscall.c 写好sys_env_set_divzero_upcall的函数定义，类似pgfault写

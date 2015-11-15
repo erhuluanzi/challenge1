@@ -16,6 +16,38 @@ LIB_SRCFILES :=		$(LIB_SRCFILES) \
 			lib/fork.c \
 			lib/divzero.c \
 			lib/divzentry.S \
+			lib/debug.c \
+			lib/dbgentry.S \
+			lib/nmskint.c \
+			lib/nmientry.S \
+			lib/bpoint.c \
+			lib/bptentry.S \
+			lib/oflow.c \
+			lib/oflwentry.S \
+			lib/bdschk.c \
+			lib/bcentry.S \
+			lib/illopcd.c \
+			lib/illopentry.S \
+			lib/dvcntavl.c \
+			lib/dnaentry.S \
+			lib/dbfault.c \
+			lib/dfentry.S \
+			lib/ivldtss.c \
+			lib/tssentry.S \
+			lib/segntprst.c \
+			lib/snpentry.S \
+			lib/stkexception.c \
+			lib/seentry.S \
+			lib/gpfault.c \
+			lib/gpfentry.S \
+			lib/fperror.c \
+			lib/fpeentry.S \
+			lib/algchk.c \
+			lib/acentry.S \
+			lib/mchchk.c \
+			lib/mcentry.S \
+			lib/SIMDfperror.c \
+			lib/sfpeentry.S \
 			lib/ipc.c
 
 

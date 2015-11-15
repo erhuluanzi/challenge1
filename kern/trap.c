@@ -237,12 +237,61 @@ trap_dispatch(struct Trapframe *tf)
 	switch (tf->tf_trapno) {
 	case T_DIVIDE:
 		divide_zero_handler(tf);
+		return;
 	case T_PGFLT:
 		page_fault_handler(tf);
 		return;
-	case T_BRKPT:
-		monitor(tf);
-		return;
+   case T_DEBUG:
+        debug_exception_handler(tf);
+        return;
+    case T_NMI:
+        non_maskable_interrupt_handler(tf);
+        return;
+    case T_BRKPT:
+        breakpoint_handler(tf);
+        return;
+    case T_OFLOW:
+        overflow_handler(tf);
+        return;
+    case T_BOUND:
+        bounds_check_handler(tf);
+        return;
+    case T_ILLOP:
+        illegal_opcode_handler(tf);
+        return;
+    case T_DEVICE:
+        device_not_available_handler(tf);
+        return;
+    case T_DBLFLT:
+        double_fault_handler(tf);
+        return;
+    case T_TSS:
+        invalid_task_switch_segment_handler(tf);
+        return;
+    case T_SEGNP:
+        segment_not_present_handler(tf);
+        return;
+    case T_STACK:
+        stack_exception_handler(tf);
+        return;
+    case T_GPFLT:
+        general_protection_fault_handler(tf);
+        return;
+    case T_FPERR:
+        floating_point_error_handler(tf);
+        return;
+    case T_ALIGN:
+        aligment_check_handler(tf);
+        return;
+    case T_MCHK:
+        machine_check_handler(tf);
+        return;
+    case T_SIMDERR:
+        SIMD_floating_point_error_handler(tf);
+        return;
+	//case T_BRKPT:
+	//	monitor(tf);
+	//	return;
 	case T_SYSCALL:
 		// we should put the return value in %eax
 		tf->tf_regs.reg_eax =
@@ -441,4 +490,484 @@ void divide_zero_handler(struct Trapframe *tf) {
 	//	curenv->env_id, fault_va, tf->tf_eip);
 	//print_trapframe(tf);
 	//env_destroy(curenv);
+}
+
+void debug_exception_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode debug exception exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("debug exception exception in kernel mode!");
+    if (curenv->env_debug_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_debug_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void non_maskable_interrupt_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode non_maskable interrupt exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("non_maskable interrupt exception in kernel mode!");
+    if (curenv->env_nmskint_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_nmskint_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void breakpoint_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode breakpoint exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("breakpoint exception in kernel mode!");
+    if (curenv->env_bpoint_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_bpoint_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void overflow_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode overflow exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("overflow exception in kernel mode!");
+    if (curenv->env_oflow_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_oflow_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void bounds_check_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode bounds check exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("bounds check exception in kernel mode!");
+    if (curenv->env_bdschk_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_bdschk_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void illegal_opcode_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode illegal opcode exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("illegal opcode exception in kernel mode!");
+    if (curenv->env_illopcd_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_illopcd_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void device_not_available_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode device not available exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("device not available exception in kernel mode!");
+    if (curenv->env_dvcntavl_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_dvcntavl_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void double_fault_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode double fault exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("double fault exception in kernel mode!");
+    if (curenv->env_dbfault_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_dbfault_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void invalid_task_switch_segment_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode invalid task switch segment exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("invalid task switch segment exception in kernel mode!");
+    if (curenv->env_ivldtss_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_ivldtss_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void segment_not_present_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode segment not present exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("segment not present exception in kernel mode!");
+    if (curenv->env_segntprst_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_segntprst_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void stack_exception_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode stack exception exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("stack exception exception in kernel mode!");
+    if (curenv->env_stkexception_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_stkexception_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void general_protection_fault_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode general protection fault exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("general protection fault exception in kernel mode!");
+    if (curenv->env_gpfault_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_gpfault_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void floating_point_error_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode floating point error exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("floating point error exception in kernel mode!");
+    if (curenv->env_fperror_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_fperror_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void aligment_check_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode aligment check exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("aligment check exception in kernel mode!");
+    if (curenv->env_algchk_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_algchk_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void machine_check_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode machine check exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("machine check exception in kernel mode!");
+    if (curenv->env_mchchk_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_mchchk_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
+}
+
+void SIMD_floating_point_error_handler(struct Trapframe *tf) {
+    uint32_t fault_va;
+    // Read processor's CR2 register to find the faulting address
+    fault_va = rcr2();
+    // handle kernel mode SIMD floating point error exception
+    if ((tf->tf_cs & 3) == 0)
+        panic("SIMD floating point error exception in kernel mode!");
+    if (curenv->env_SIMDfperror_upcall) {
+        struct UTrapframe *utf = tf->tf_esp >= UXSTACKTOP-PGSIZE && tf->tf_esp < UXSTACKTOP ?
+                            (struct UTrapframe *)(tf->tf_esp - sizeof(struct UTrapframe) - 4) :
+                            (struct UTrapframe *)(UXSTACKTOP - sizeof(struct UTrapframe)) ;
+        user_mem_assert(curenv, (void *)utf, 1, PTE_W);
+        utf->utf_fault_va = fault_va;
+        utf->utf_err = tf->tf_err;
+        utf->utf_regs = tf->tf_regs;
+        utf->utf_eip = tf->tf_eip;
+        utf->utf_eflags = tf->tf_eflags;
+        utf->utf_esp = tf->tf_esp;
+        curenv->env_tf.tf_eip = (uintptr_t)curenv->env_SIMDfperror_upcall;
+        curenv->env_tf.tf_esp = (uintptr_t)utf;
+        env_run(curenv);
+    }
+
+    // Destroy the environment that caused the fault.
+    //cprintf("[%08x] user fault va %08x ip %08x\n",
+    //  curenv->env_id, fault_va, tf->tf_eip);
+    //print_trapframe(tf);
+    //env_destroy(curenv);
 }

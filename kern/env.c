@@ -261,6 +261,22 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	// Clear the page fault handler until user installs one.
 	e->env_pgfault_upcall = 0;
 	e->env_divzero_upcall = 0;
+	e->env_debug_upcall = 0;
+	e->env_nmskint_upcall = 0;
+	e->env_bpoint_upcall = 0;
+	e->env_oflow_upcall = 0;
+	e->env_bdschk_upcall = 0;
+	e->env_illopcd_upcall = 0;
+	e->env_dvcntavl_upcall = 0;
+	e->env_dbfault_upcall = 0;
+	e->env_ivldtss_upcall = 0;
+	e->env_segntprst_upcall = 0;
+	e->env_stkexception_upcall = 0;
+	e->env_gpfault_upcall = 0;
+	e->env_fperror_upcall = 0;
+	e->env_algchk_upcall = 0;
+	e->env_mchchk_upcall = 0;
+	e->env_SIMDfperror_upcall = 0;
 
 	// Also clear the IPC receiving flag.
 	e->env_ipc_recving = 0;
