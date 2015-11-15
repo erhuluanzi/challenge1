@@ -13,7 +13,7 @@ void (*_divzero_handler)(struct UTrapframe *utf);
 
 // set the divide zero exception handler function.
 // If there isn't one yet, _divzero_handler will be 0.
-// the first time we register a handler, we need to allocate an 
+// the first time we register a handler, we need to allocate an
 // exception stack, and tell the kernel to call the assembly-language
 // _divzero_upcall routine when a page fault occurs.
 
@@ -27,6 +27,6 @@ void set_divzero_handler(void (*handler)(struct UTrapframe *utf)) {
 
 	// save handler pointer for assembly to call
 	_divzero_handler = handler;
-	if ((r = sys_env_set_pgfault_upcall(0, _divzero_upcall)) < 0)
+	if ((r = sys_env_set_divzero_upcall(0, _divzero_upcall)) < 0)
 		panic("set_divzero_handler: sys_env_set_divzero_upcall: %e", r);
 }
