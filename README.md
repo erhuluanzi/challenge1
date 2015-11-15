@@ -40,3 +40,5 @@
 
 最后利用user文件夹下的divzero.c做测试即可，记得补充一个divzero_handler来测试接口
 
+> mark一下完成啦！现在我的测试程序是divzero.c，目前我的处理方法是只输出一句`this is divide zero handler!`然后直接退出程序。用户如果有需求可以自行处理divide zero。只需要调用`set_divzero_handler()`注册一个handler就可以啦。
+
