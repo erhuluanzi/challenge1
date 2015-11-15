@@ -1,4 +1,4 @@
-// illopcd upcall entrypoint.
+// illegal opcode upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

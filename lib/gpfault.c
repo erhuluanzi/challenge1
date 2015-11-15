@@ -1,5 +1,5 @@
-// User-level gpfault handler support.
-// Rather than register the C gpfault handler directly with the
+// User-level general protection fault handler support.
+// Rather than register the C general protection fault handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in gpfentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _gpfault_upcall(void);
 void (*_gpfault_handler)(struct UTrapframe *utf);
 
 //
-// Set the gpfault handler function.
+// Set the general protection fault handler function.
 // If there isn't one yet, _gpfault_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _gpfault_upcall routine when a gpfault occurs.
+// _gpfault_upcall routine when a general protection fault occurs.
 //
 void
 set_gpfault_handler(void (*handler)(struct UTrapframe *utf))

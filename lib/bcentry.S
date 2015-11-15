@@ -1,4 +1,4 @@
-// bdschk upcall entrypoint.
+// bounds check upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

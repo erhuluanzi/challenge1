@@ -1,4 +1,4 @@
-// dbfault upcall entrypoint.
+// double fault upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

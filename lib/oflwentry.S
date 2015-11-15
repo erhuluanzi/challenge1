@@ -1,4 +1,4 @@
-// oflow upcall entrypoint.
+// overflow upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

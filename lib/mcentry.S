@@ -1,4 +1,4 @@
-// mchchk upcall entrypoint.
+// machine check upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

@@ -1,4 +1,4 @@
-// bpoint upcall entrypoint.
+// breakpoint upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

@@ -1,4 +1,4 @@
-// fperror upcall entrypoint.
+// floating point error upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

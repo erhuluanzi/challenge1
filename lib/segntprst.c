@@ -1,5 +1,5 @@
-// User-level segntprst handler support.
-// Rather than register the C segntprst handler directly with the
+// User-level segment not present handler support.
+// Rather than register the C segment not present handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in snpentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _segntprst_upcall(void);
 void (*_segntprst_handler)(struct UTrapframe *utf);
 
 //
-// Set the segntprst handler function.
+// Set the segment not present handler function.
 // If there isn't one yet, _segntprst_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _segntprst_upcall routine when a segntprst occurs.
+// _segntprst_upcall routine when a segment not present occurs.
 //
 void
 set_segntprst_handler(void (*handler)(struct UTrapframe *utf))

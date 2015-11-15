@@ -1,4 +1,4 @@
-// debug upcall entrypoint.
+// debug exception upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

@@ -1,5 +1,5 @@
-// User-level illopcd handler support.
-// Rather than register the C illopcd handler directly with the
+// User-level illegal opcode handler support.
+// Rather than register the C illegal opcode handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in illopentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _illopcd_upcall(void);
 void (*_illopcd_handler)(struct UTrapframe *utf);
 
 //
-// Set the illopcd handler function.
+// Set the illegal opcode handler function.
 // If there isn't one yet, _illopcd_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _illopcd_upcall routine when a illopcd occurs.
+// _illopcd_upcall routine when a illegal opcode occurs.
 //
 void
 set_illopcd_handler(void (*handler)(struct UTrapframe *utf))

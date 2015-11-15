@@ -1,4 +1,4 @@
-// ivldtss upcall entrypoint.
+// invalid task switch segment upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

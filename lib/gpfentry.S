@@ -1,4 +1,4 @@
-// gpfault upcall entrypoint.
+// general protection fault upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

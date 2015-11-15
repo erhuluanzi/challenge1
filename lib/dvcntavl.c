@@ -1,5 +1,5 @@
-// User-level dvcntavl handler support.
-// Rather than register the C dvcntavl handler directly with the
+// User-level device not available handler support.
+// Rather than register the C device not available handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in dnaentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _dvcntavl_upcall(void);
 void (*_dvcntavl_handler)(struct UTrapframe *utf);
 
 //
-// Set the dvcntavl handler function.
+// Set the device not available handler function.
 // If there isn't one yet, _dvcntavl_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _dvcntavl_upcall routine when a dvcntavl occurs.
+// _dvcntavl_upcall routine when a device not available occurs.
 //
 void
 set_dvcntavl_handler(void (*handler)(struct UTrapframe *utf))

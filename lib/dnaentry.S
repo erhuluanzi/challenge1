@@ -1,4 +1,4 @@
-// dvcntavl upcall entrypoint.
+// device not available upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

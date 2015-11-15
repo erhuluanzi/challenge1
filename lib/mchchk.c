@@ -1,5 +1,5 @@
-// User-level mchchk handler support.
-// Rather than register the C mchchk handler directly with the
+// User-level machine check handler support.
+// Rather than register the C machine check handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in mcentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _mchchk_upcall(void);
 void (*_mchchk_handler)(struct UTrapframe *utf);
 
 //
-// Set the mchchk handler function.
+// Set the machine check handler function.
 // If there isn't one yet, _mchchk_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _mchchk_upcall routine when a mchchk occurs.
+// _mchchk_upcall routine when a machine check occurs.
 //
 void
 set_mchchk_handler(void (*handler)(struct UTrapframe *utf))

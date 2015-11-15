@@ -1,4 +1,4 @@
-// segntprst upcall entrypoint.
+// segment not present upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

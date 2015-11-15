@@ -1,4 +1,4 @@
-// stkexception upcall entrypoint.
+// stack exception upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

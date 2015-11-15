@@ -1,4 +1,4 @@
-// algchk upcall entrypoint.
+// aligment check upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

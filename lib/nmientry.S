@@ -1,4 +1,4 @@
-// nmskint upcall entrypoint.
+// non_maskable interrupt upcall entrypoint.
 #include <inc/mmu.h>
 #include <inc/memlayout.h>
 

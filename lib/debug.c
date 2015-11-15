@@ -1,5 +1,5 @@
-// User-level debug handler support.
-// Rather than register the C debug handler directly with the
+// User-level debug exception handler support.
+// Rather than register the C debug exception handler directly with the
 // kernel as the page fault handler, we register the assembly language
 // wrapper in dbgentry.S, which in turns calls the registered C
 // function.
@@ -14,12 +14,12 @@ extern void _debug_upcall(void);
 void (*_debug_handler)(struct UTrapframe *utf);
 
 //
-// Set the debug handler function.
+// Set the debug exception handler function.
 // If there isn't one yet, _debug_handler will be 0.
 // The first time we register a handler, we need to
 // allocate an exception stack (one page of memory with its top
 // at UXSTACKTOP), and tell the kernel to call the assembly-language
-// _debug_upcall routine when a debug occurs.
+// _debug_upcall routine when a debug exception occurs.
 //
 void
 set_debug_handler(void (*handler)(struct UTrapframe *utf))
