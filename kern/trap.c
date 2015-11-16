@@ -133,6 +133,7 @@ trap_init(void)
 		SETGATE(idt[IRQ_OFFSET + i], 0, GD_KT, t_handler[21 + i], 0);
 	}
 	// Per-CPU setup
+	SETGATE(idt[T_NMI], 0, GD_KT, t_handler[2], 3);
 	trap_init_percpu();
 }
 

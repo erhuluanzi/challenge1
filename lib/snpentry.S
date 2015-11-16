@@ -18,6 +18,7 @@ _segntprst_upcall:
     movl %ebx, (%eax)
 
     // Restore the trap-time registers.
+    addl $0x8, %esp // this is very important!
     popal
 
     // Restore eflags from the stack.
