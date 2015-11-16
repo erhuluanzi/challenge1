@@ -54,8 +54,10 @@
 
 ####16: floating point exception
 根据intel开发手册
+
 > Sets the FPU control, status, tag, instruction pointer, and data pointer registers to their default states. The FPU control word is set to 037FH (round to nearest, all exceptions masked, 64-bit precision). The status word is cleared (no exception flags set, TOP is set to 0). The data registers in the register stack are left unchanged, but they are all tagged as empty (11B). Both the instruction and data pointers are cleared.
 > When the x87 FPU is initialized with either an FINIT/FNINIT or FSAVE/FNSAVE instruction, the x87 FPU control word is set to 037FH, which masks all floating-point exceptions, sets rounding to nearest, and sets the x87 FPU precision to 64 bits.
+
 我们可以知道要想让硬件抛出浮点数异常（而不是自动解决）需要手动设置FPU的控制寄存器。所以使用FSTCW和FLDCW来写入控制字，代码如下：
 	asm volatile("FINIT; FSTCW %0; andw $0xfff0, %0; FLDCW %0; FSTCW %0; FLDZ; FLDZ; FDIVP; FSTPS %1": "=memory"(buff), "=memory"(res));
 以上代码可以在OS X系统中编译运行，并抛出浮点数异常，但是在放入jos的代码中并编译会报
