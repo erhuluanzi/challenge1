@@ -118,10 +118,10 @@ void %s_handler(struct Trapframe *tf) {
     }
 
     // Destroy the environment that caused the fault.
-    //cprintf("[%%08x] user fault va %%08x ip %%08x\\n",
-    //  curenv->env_id, fault_va, tf->tf_eip);
-    //print_trapframe(tf);
-    //env_destroy(curenv);
+    cprintf("[%%08x] user fault va %%08x ip %%08x\\n",
+    curenv->env_id, fault_va, tf->tf_eip);
+    print_trapframe(tf);
+    env_destroy(curenv);
 }
 \
 '''
