@@ -21,7 +21,7 @@
 非屏蔽中断，用于响应外部硬件中断的，所以我们在用户态也不会写出代码能产生它。一般就是外部中断设备连接上来的。而且NMI一般用于处理特别紧急的情况，所以用户也不应该去自己注册handler吧。然而我们最后还是写了它的测试程序，毕竟还是有可能由用户程序来处理NMI中断的。
 
 ####3: breakpoint
-需要把trap.c的第268行的	`assert(!(read_eflags() & FL_IF));`去掉才行，否则breakpoint时这里会报错。因为用户态产生的异常没有关中断，这条语句是检查中断关没关的。然后去掉之后就用写好的breakpoint.c测试就可以看到breakpoint。
+用写好的breakpoint.c测试就可以看到breakpoint。
 ```c
   #include <inc/lib.h>
   
@@ -158,7 +158,55 @@ success!
 [00001000] exiting gracefully
 [00001000] free env 00001000
 ```
+####INT 3: breakpoint
+直接用原来提供的user/breakpoint.c：
+```c
+	#include <inc/lib.h>
+	void handler(struct UTrapframe *utf) {
+		cprintf("this is breakpoint handler!\n");
+		return;
+	}
 
+	void umain(int argc, char **argv) {
+		set_bpoint_handler(handler);
+		asm volatile("int $3");
+		cprintf("success!\n");
+		return;
+	}
+```
+测试结果为：
+```
+[00000000] new env 00001000
+this is breakpoint handler!
+success!
+[00001000] exiting gracefully
+[00001000] free env 00001000
+```
+
+####INT 4: overflow
+直接用原来提供的user/breakpoint.c：
+```c
+	#include <inc/lib.h>
+	void handler(struct UTrapframe *utf) {
+		cprintf("this is breakpoint handler!\n");
+		return;
+	}
+
+	void umain(int argc, char **argv) {
+		set_bpoint_handler(handler);
+		asm volatile("int $3");
+		cprintf("success!\n");
+		return;
+	}
+```
+测试结果为：
+```
+[00000000] new env 00001000
+this is breakpoint handler!
+success!
+[00001000] exiting gracefully
+[00001000] free env 00001000
+```
 
 
 

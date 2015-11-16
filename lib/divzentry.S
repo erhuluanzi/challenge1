@@ -18,6 +18,7 @@ _divzero_upcall:
 	movl %ebx, (%eax)
 
 	// Restore the trap-time registers. 
+	addl $0x8, %esp
 	popal
 
 	// Restore eflags from the stack.  

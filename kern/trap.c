@@ -134,6 +134,7 @@ trap_init(void)
 	}
 	// Per-CPU setup
 	SETGATE(idt[T_NMI], 0, GD_KT, t_handler[2], 3);
+	SETGATE(idt[T_OFLOW], 0, GD_KT, t_handler[T_OFLOW], 3);
 	trap_init_percpu();
 }
 
