@@ -24,7 +24,7 @@
 用写好的breakpoint.c测试就可以看到breakpoint。
 ```c
   #include <inc/lib.h>
-  
+
   void
   umain(int argc, char **argv)
   {
@@ -51,6 +51,17 @@
 =========
 
 ### Part2: exception 10~19 survey by WuXian
+
+####16: floating point exception
+根据intel开发手册
+> Sets the FPU control, status, tag, instruction pointer, and data pointer registers to their default states. The FPU control word is set to 037FH (round to nearest, all exceptions masked, 64-bit precision). The status word is cleared (no exception flags set, TOP is set to 0). The data registers in the register stack are left unchanged, but they are all tagged as empty (11B). Both the instruction and data pointers are cleared.
+> When the x87 FPU is initialized with either an FINIT/FNINIT or FSAVE/FNSAVE instruction, the x87 FPU control word is set to 037FH, which masks all floating-point exceptions, sets rounding to nearest, and sets the x87 FPU precision to 64 bits.
+我们可以知道要想让硬件抛出浮点数异常（而不是自动解决）需要手动设置FPU的控制寄存器。所以使用FSTCW和FLDCW来写入控制字，代码如下：
+	asm volatile("FINIT; FSTCW %0; andw $0xfff0, %0; FLDCW %0; FSTCW %0; FLDZ; FLDZ; FDIVP; FSTPS %1": "=memory"(buff), "=memory"(res));
+以上代码可以在OS X系统中编译运行，并抛出浮点数异常，但是在放入jos的代码中并编译会报
+	Error: operand type mismatch for `fstcw'
+一系列错误，经查是由于工具链与内核版本不符。暂时不想去处理工具链的问题，所以在样例程序中使用了int指令替代以上操作触发异常。
+
 
 ####---------------------not finished yet-------------------------
 
@@ -91,7 +102,7 @@
 	这是个庞大的工程，要仿照lib/pfentry.S写一个，起到统一提供接口的目的
 
 * lib/Makefrag
-	在LIB_SRCFILES条目中增加 lib/divzero.c 和 lib/divzentry.S 这样才能够在编译时加进去我们的新文件 
+	在LIB_SRCFILES条目中增加 lib/divzero.c 和 lib/divzentry.S 这样才能够在编译时加进去我们的新文件
 
 * lib/syscall.c
 	增加一个库包装系统调用`int sys_env_set_divzero_upcall(envid_t envid, void *upcall)`

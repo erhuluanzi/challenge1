@@ -57,26 +57,11 @@ KERN_BINFILES :=	user/hello \
 			user/faultwrite \
 			user/faultwritekernel
 
-# Binary files for LAB4
-KERN_BINFILES +=	user/idle \
-			user/yield \
-			user/dumbfork \
-			user/stresssched \
-			user/faultdie \
-			user/faultregs \
-			user/faultalloc \
-			user/faultallocbad \
-			user/faultnostack \
-			user/faultbadhandler \
-			user/faultevilhandler \
-			user/forktree \
-			user/sendpage \
-			user/spin \
-			user/fairness \
-			user/pingpong \
-			user/pingpongs \
-			user/nminterrupt \
+# Binary files for challenge
+KERN_BINFILES +=	user/nminterrupt \
 			user/overflow \
+			user/fperror \
+			user/segfault \
 			user/primes
 KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/%.o, $(KERN_SRCFILES))
 KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/%.o, $(KERN_OBJFILES))
