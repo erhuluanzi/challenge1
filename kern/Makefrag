@@ -62,6 +62,7 @@ KERN_BINFILES +=	user/nminterrupt \
 			user/overflow \
 			user/fperror \
 			user/segfault \
+			user/illopcd \
 			user/primes
 KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/%.o, $(KERN_SRCFILES))
 KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/%.o, $(KERN_OBJFILES))
