@@ -35,10 +35,10 @@
 可以用INTO指令产生int 4，但是我们在用户态设置的权限好像不能使用INTO指令，所以我尝试写程序也没有成功产生，只能导致general protection fault。除非我们把它的权限改成user的？我觉得overflow在用户态程序运行时是可能产生的，只是我没找到直接写代码产生的方法，所以可以暂时修改权限已完成challenge题目。
 
 ####5: bounds check
-这个异常是通过BOUND指令产生的，和INTO工作效果差不多，如果检查元素在边界内部，则相当于nop指令，否则就回导致int 5产生。但是我们应该也不能在用户态下产生这个异常吧。如果想用，就得修改trap.c把它的权限改为user的。但是这个也可能在用户程序中发生，所以也得手动暂时改一下它的权限。
+这个异常是通过BOUND指令产生的，和INTO工作效果差不多，如果检查元素在边界内部，则相当于nop指令，否则就会导致int 5产生。但是我们应该也不能在用户态下产生这个异常吧。如果想用，就得修改trap.c把它的权限改为user的。但是这个也可能在用户程序中发生，所以也得手动暂时改一下它的权限。
 
 ####6: illegal opcode
-当执行一条语句它的操作数和opcode不匹配时，就会产生int 6。例如跨段的jmp指令操作数写成寄存器，或者les指令操作数是寄存器时。我不知道如何直接产生int 6，因为尝试过各种情况都会在汇编时直接报错，而不会到运行时才发现。但是我觉得用户程序运行的时候可能会发生这种情况，所以我们可以把它的权限暂时改为user，然后用int 6产生。
+当执行一条语句它的操作数和opcode不匹配时，就会产生int 6。例如跨段的jmp指令操作数写成寄存器，或者les指令操作数是寄存器时。但是我实验发现无法通过上述的方式产生INT 6，于是只能自找出路。我无法写错误的汇编指令，因为编译时会报错，那么我只能写正确的指令但是该指令不能被运行。于是我就想到了前段时间编译其他文件时出错是因为电脑不支持AVX2指令集，那么我就加了一条`asm volatile("addpd %xmm2, %xmm1");`于是就能产生illegal opcode异常了。
 
 ####7: device not available
 在80386用户手册上讲的是coprocessor not available，我觉得用户程序应该不会导致它的发生，即使遇到也不应该由用户处理。
@@ -128,6 +128,7 @@
 	}
 ```
 需要注意，这里handler直接exit()了，没有再返回用户程序，因为我们没有解决divide zero，返回用户程序会重复产生异常。
+#####重要说明：我们的异常处理最后都会返回到异常发生的那条指令，而不是下一条。因为根据资料可以知道，中断返回到下一条指令；陷阱返回到下一条然而我们不讨论唯一的trap -- debug；最后其他异常都返回原来指令。
 
 ####INT 1: debug exception
 我们认为除非在gdb这样的debugger中，用户程序一般不会遇到debug exception。而且即使遇到也不应该由用户来解决。所以没有写它的测试程序。当然，我们提供了接口，如果之后发现需要还是可以用的。
@@ -184,17 +185,19 @@ success!
 ```
 
 ####INT 4: overflow
-直接用原来提供的user/breakpoint.c：
+需要开启INT 4的用户权限。用普通的C语言整数加减法无法产生，因为大概会被编译器优化。所以我们就需要用内嵌汇编来实现。
 ```c
 	#include <inc/lib.h>
 	void handler(struct UTrapframe *utf) {
-		cprintf("this is breakpoint handler!\n");
+		cprintf("this is overflow exception handler!\n");
 		return;
 	}
 
 	void umain(int argc, char **argv) {
-		set_bpoint_handler(handler);
-		asm volatile("int $3");
+		set_oflow_handler(handler);
+		asm volatile("movl $0x80000000, %ebx");
+		asm volatile("subl $10, %ebx");
+		asm volatile("into");
 		cprintf("success!\n");
 		return;
 	}
@@ -202,11 +205,69 @@ success!
 测试结果为：
 ```
 [00000000] new env 00001000
-this is breakpoint handler!
+this is overflow exception handler!
 success!
 [00001000] exiting gracefully
 [00001000] free env 00001000
 ```
+
+###INT 5: bounds check
+同样需要开启INT 5的用户权限。利用BOUND语句可以产生INT 5了。
+```c
+	#include <inc/lib.h>
+	void handler(struct UTrapframe *utf) {
+		cprintf("this is bound check exception handler!\n");
+		exit();
+	}
+
+	short arrayBounds[2] = {12, 1};
+	void umain(int argc, char **argv) {
+		set_bdschk_handler(handler);
+		asm volatile("movl $0, %eax");
+		asm volatile("bound %eax, arrayBounds");
+		return;
+	}
+```
+而且short必须写在外面作为全局变量，否则汇编语句会编译报错。需要注意的是此处handler内也是直接`exit()`退出，否则就会一直产生Bound check exception死循环。
+测试结果为：
+```
+[00000000] new env 00001000
+this is bound check exception handler!
+[00001000] exiting gracefully
+[00001000] free env 00001000
+```
+
+####INT 6: illegal opcode
+写到这里时，编译运行发现一直都是Triple faults，想了半天都不知道为何，后来发现删除一些代码就好。我们认为原因在于这些user code目前都跟着内核被bootloader加载进内存了，当我们写的用户态程序太多时，可能空间不够于是内核加载不进去。我们只好在kern/Makefrag的文件列表中删掉之前的一些user文件夹下的文件。
+用AVX指令集中的addpd，编译能通过，但是执行时会报illegal opcode：
+```c
+	#include <inc/lib.h>
+	void handler(struct UTrapframe *utf) {
+		cprintf("this is illegal opcode exception handler!\n");
+		exit();
+	}
+
+	void umain(int argc, char **argv) {
+		set_illopcd_handler(handler);
+		asm volatile("addpd %xmm2, %xmm1");
+		cprintf("success!\n");
+		return;
+	}
+```
+同样这里也不得不直接`exit()`退出，我们没有解决该异常，否则返回只能不断产生错误。
+测试结果为：
+```
+[00000000] new env 00001000
+this is illegal opcode exception handler!
+[00001000] exiting gracefully
+[00001000] free env 00001000
+```
+
+####INT 7: device not available
+在Part 1我有讨论过，我们应该不用管它。
+
+####INT 8: double fault
+
 
 
 

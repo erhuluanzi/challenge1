@@ -132,9 +132,11 @@ trap_init(void)
 	for (i = 0; i < 16; i++) {
 		SETGATE(idt[IRQ_OFFSET + i], 0, GD_KT, t_handler[21 + i], 0);
 	}
-	// Per-CPU setup
+	// add for our challenges!
 	SETGATE(idt[T_NMI], 0, GD_KT, t_handler[2], 3);
 	SETGATE(idt[T_OFLOW], 0, GD_KT, t_handler[T_OFLOW], 3);
+	SETGATE(idt[T_BOUND], 0, GD_KT, t_handler[T_BOUND], 3);
+	// Per-CPU setup
 	trap_init_percpu();
 }
 
