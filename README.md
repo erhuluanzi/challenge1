@@ -95,3 +95,4 @@
 
 > mark一下完成啦！现在我的测试程序是divzero.c，目前我的处理方法是只输出一句`this is divide zero handler!`然后直接退出程序。用户如果有需求可以自行处理divide zero。只需要调用`set_divzero_handler()`注册一个handler就可以啦。
 
+> 感谢先神写了auto_handler脚本，现在运行auto_handler.py可以全部自动生成出来我们需要的代码，再粘贴进对应的文件相应位置，最后只需要写一些用户程序进行测试即可。之前版本的严重bug也已解决，再次感谢。
