@@ -52,6 +52,18 @@
 
 ### Part2: exception 10~19 survey by WuXian
 
+####12: stack exception
+按理说是最容易引发的错误。。。
+然而在jos中全都被Page fault截获了。
+经历了如下尝试：
+
+1. 无穷递归爆栈。
+2. 访问/写入0地址。
+3. 写入const指针指向的地址。
+4. 强行修改SS寄存器（这个一定会报GP啦，狗急跳墙而已。。）
+
+除了第4个，剩下的都是PF，不知所措。。
+
 ####16: floating point exception
 根据intel开发手册
 
@@ -62,11 +74,18 @@
 
 	asm volatile("FINIT; FSTCW %0; andw $0xfff0, %0; FLDCW %0; FSTCW %0; FLDZ; FLDZ; FDIVP; FSTPS %1": "=memory"(buff), "=memory"(res));
 
-以上代码可以在OS X系统中编译运行，并抛出浮点数异常，但是在放入jos的代码中并编译会报
+以上代码可以在OS X系统中编译运行，并抛出浮点数异常，但是在放入jos的代码中并编译会报如下错误
 
-	Error: operand type mismatch for `fstcw'
+	+ cc[USER] user/fperror.c
+	{standard input}: Assembler messages:
+	{standard input}:138: Error: operand type mismatch for `fstcw'
+	{standard input}:138: Error: operand type mismatch for `fldcw'
+	{standard input}:138: Error: operand type mismatch for `fstcw'
+	{standard input}:138: Error: operand type mismatch for `fstp'
+	make[1]: *** [obj/user/fperror.o] Error 1
+	make: *** [prep-fperror] Error 2
 
-一系列错误，经查是由于工具链与内核版本不符。暂时不想去处理工具链的问题，所以在样例程序中使用了int指令替代以上操作触发异常。
+经查是由于工具链与内核版本不符。暂时不想去处理工具链的问题，所以在样例程序中使用了int指令替代以上操作触发异常。
 
 
 ####---------------------not finished yet-------------------------
