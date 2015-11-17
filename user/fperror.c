@@ -13,6 +13,6 @@ umain(int argc, char **argv) {
     short buff;
     float res;
     // The codes below work well on OSX, but can not be compiled in under this tool chain.
-    asm volatile("FINIT; FSTCW %0; ANDW $0xfff0, %0; FLDCW %0; FSTCW %0; FLDZ; FLDZ; FDIVP; FSTP %1": "=memory"(buff), "=memory"(res));
+    // asm volatile("FINIT; FSTCW %0; ANDW $0xfff0, %0; FLDCW %0; FSTCW %0; FLDZ; FLDZ; FDIVP; FSTP %1": "=memory"(buff), "=memory"(res));
     asm volatile("int $16");
 }

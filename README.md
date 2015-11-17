@@ -64,15 +64,25 @@
 
 除了第4个，剩下的都是PF，不知所措。。
 
+####13: general protection fault
+这个有太多种可能触发了，直接用user/softint就可以了。
+
+####14: page fault
+处理过了
+
+####15: reserved
+
 ####16: floating point exception
-根据intel开发手册
+最初尝试了好多方法都没能抛出浮点数异常，而且Understanding the Linux Kernel中提到会发生异常的情况也与平时经验不符（比如1.0/0.0会得到1.#inf的值，而不是抛出异常），于是去查Intel® 64 and IA-32 Architectures Software Developer’s Manual，查到了如下内容。
+根据intel开发手册，
 
 > Sets the FPU control, status, tag, instruction pointer, and data pointer registers to their default states. The FPU control word is set to 037FH (round to nearest, all exceptions masked, 64-bit precision). The status word is cleared (no exception flags set, TOP is set to 0). The data registers in the register stack are left unchanged, but they are all tagged as empty (11B). Both the instruction and data pointers are cleared.
+>
 > When the x87 FPU is initialized with either an FINIT/FNINIT or FSAVE/FNSAVE instruction, the x87 FPU control word is set to 037FH, which masks all floating-point exceptions, sets rounding to nearest, and sets the x87 FPU precision to 64 bits.
 
 我们可以知道要想让硬件抛出浮点数异常（而不是自动解决）需要手动设置FPU的控制寄存器。所以使用FSTCW和FLDCW来写入控制字，代码如下：
 
-	asm volatile("FINIT; FSTCW %0; andw $0xfff0, %0; FLDCW %0; FSTCW %0; FLDZ; FLDZ; FDIVP; FSTPS %1": "=memory"(buff), "=memory"(res));
+	asm volatile("FINIT; FSTCW %0; 	andw $0xfff0, %0; FLDCW %0; FSTCW %0; FLDZ; FLDZ; FDIVP; FSTPS %1": "=memory"(buff), "=memory"(res));
 
 以上代码可以在OS X系统中编译运行，并抛出浮点数异常，但是在放入jos的代码中并编译会报如下错误
 
@@ -86,6 +96,39 @@
 	make: *** [prep-fperror] Error 2
 
 经查是由于工具链与内核版本不符。暂时不想去处理工具链的问题，所以在样例程序中使用了int指令替代以上操作触发异常。
+
+####17: alignment check
+> AC (bit 18)
+>
+> Alignment check (or access control) flag — If the AM bit is set in the CR0 register, align- ment checking of user-mode data accesses is enabled if and only if this flag is 1.
+>> If the SMAP bit is set in the CR4 register, explicit supervisor-mode data accesses to user-mode pages are allowed if and only if this bit is 1. See Section 4.6, “Access Rights,” in the Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A.
+这是一个只能在用户态产生的异常。
+在x86处理器初始化之后，EFLAGS寄存器的状态值为0000 0002H。所以"我们仍要手动开启它。
+> The POPFD instruction pops a doubleword into the EFLAGS register. This instruction can change the state of the AC bit (bit 18) and the ID bit (bit 21), as well as the bits affected by a POPF instruction. The restrictions for changing the IOPL bits and the IF flag that were given for the POPF instruction also apply to the POPFD instruction.
+果然在JOS里并没有什么卵用。。。
+	+ cc[USER] user/segfault.c
+	{standard input}: Assembler messages:
+	{standard input}:144: Error: no such instruction: `pushfd'
+	{standard input}:169: Error: no such instruction: `popfd'
+	make[1]: *** [obj/user/segfault.o] Error 1
+	make: *** [prep-segfault] Error 2
+
+####18: machine check
+
+> Description
+> > Indicates that the processor detected an internal machine error or a bus error, or that an external agent detected a bus error. The machine-check exception is model-specific, available on the Pentium and later generations of processors. The implementation of the machine-check exception is different between different processor families, and these implementations may not be compatible with future Intel 64 or IA-32 processors. (Use the CPUID instruction to determine whether this feature is present.)
+>> Bus errors detected by external agents are signaled to the processor on dedicated pins: the BINIT# and MCERR# pins on the Pentium 4, Intel Xeon, and P6 family processors and the BUSCHK# pin on the Pentium processor. When one of these pins is enabled, asserting the pin causes error information to be loaded into machine-check registers and a machine-check exception is generated.
+
+所以这个异常一般是不会交给用户处理的。
+
+####19: SIMD floating point error
+有了处理16号异常的经验，我们可以直接去查手册了。
+
+> Bits 0 through 5 of the MXCSR register indicate whether a SIMD floating-point exception has been detected. They are “sticky” flags. That is, after a flag is set, it remains set until explicitly cleared. To clear these flags, use the LDMXCSR or the FXRSTOR instruction to write zeroes to them.
+
+> Bits 7 through 12 provide individual mask bits for the SIMD floating-point exceptions. An exception type is masked if the corresponding mask bit is set, and it is unmasked if the bit is clear. These mask bits are set upon a power-up or reset. This causes all SIMD floating-point exceptions to be initially masked.
+
+
 
 
 ####---------------------not finished yet-------------------------
@@ -304,7 +347,23 @@ this is illegal opcode exception handler!
 
 ####INT 8: double fault
 
-
+####INT 16: floating point error
+> 4.9.3 Typical Actions of a Floating-Point Exception Handler
+> 
+> After the floating-point exception handler is invoked, the processor handles the exception in the same manner that it handles non-floating-point exceptions. The floating-point exception handler is normally part of the operating system or executive software, and it usually invokes a user-registered floating-point exception handle.
+> 
+> A typical action of the exception handler is to store state information in memory. Other typical exception handler actions include:
+>
+> * Examining the stored state information to determine the nature of the error
+> * Taking actions to correct the condition that caused the error
+> * Clearing the exception flags
+> * Returning to the interrupted program and resuming normal execution
+>
+> In lieu of writing recovery procedures, the exception handler can do the following:
+>
+> * Increment in software an exception counter for later display or printing
+> * Print or display diagnostic information (such as the state information)
+> * Halt further program execution
 
 
 

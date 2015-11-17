@@ -9,5 +9,5 @@ void handler(struct UTrapframe *utf){
 void
 umain(int argc, char **argv) {
     set_stkexception_handler(handler);
-    asm volatile("movl $0, %eax; movl %eax, %ss;");
+    asm volatile("pushl %eax");
 }
