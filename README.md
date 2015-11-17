@@ -103,8 +103,13 @@
 > Alignment check (or access control) flag — If the AM bit is set in the CR0 register, align- ment checking of user-mode data accesses is enabled if and only if this flag is 1.
 >> If the SMAP bit is set in the CR4 register, explicit supervisor-mode data accesses to user-mode pages are allowed if and only if this bit is 1. See Section 4.6, “Access Rights,” in the Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A.
 这是一个只能在用户态产生的异常。
-在x86处理器初始化之后，EFLAGS寄存器的状态值为0000 0002H。所以"我们仍要手动开启它。
+在x86处理器初始化之后，EFLAGS寄存器的状态值为0000 0002H。所以我们仍要手动开启它。
 > The POPFD instruction pops a doubleword into the EFLAGS register. This instruction can change the state of the AC bit (bit 18) and the ID bit (bit 21), as well as the bits affected by a POPF instruction. The restrictions for changing the IOPL bits and the IF flag that were given for the POPF instruction also apply to the POPFD instruction.
+	asm volatile("pushfd");
+    asm volatile("popl %eax");
+    asm volatile("orl 0x00020000, %eax");
+    asm volatile("pushl %eax");
+    asm volatile("popfd");
 果然在JOS里并没有什么卵用。。。
 	+ cc[USER] user/segfault.c
 	{standard input}: Assembler messages:

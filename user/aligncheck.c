@@ -9,9 +9,9 @@ void handler(struct UTrapframe *utf){
 void
 umain(int argc, char **argv) {
     set_algchk_handler(handler);
-    asm volatile("pushfd");
+    //asm volatile("pushfd");
     asm volatile("popl %eax");
     asm volatile("orl 0x00020000, %eax");
     asm volatile("pushl %eax");
-    asm volatile("popfd");
+    //asm volatile("popfd");
 }

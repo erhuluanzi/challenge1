@@ -59,6 +59,7 @@ KERN_BINFILES :=	user/hello \
 
 # Binary files for challenge
 KERN_BINFILES +=	user/nminterrupt \
+			user/bound \
 			user/fperror \
 			user/segfault \
 			user/illopcd \
