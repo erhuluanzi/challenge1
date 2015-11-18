@@ -101,17 +101,19 @@
 > AC (bit 18)
 >
 > Alignment check (or access control) flag — If the AM bit is set in the CR0 register, align- ment checking of user-mode data accesses is enabled if and only if this flag is 1.
->> If the SMAP bit is set in the CR4 register, explicit supervisor-mode data accesses to user-mode pages are allowed if and only if this bit is 1. See Section 4.6, “Access Rights,” in the Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A.
-这是一个只能在用户态产生的异常。
-在x86处理器初始化之后，EFLAGS寄存器的状态值为0000 0002H。所以我们仍要手动开启它。
-> The POPFD instruction pops a doubleword into the EFLAGS register. This instruction can change the state of the AC bit (bit 18) and the ID bit (bit 21), as well as the bits affected by a POPF instruction. The restrictions for changing the IOPL bits and the IF flag that were given for the POPF instruction also apply to the POPFD instruction.
-	asm volatile("pushfd");
+>
+> If the SMAP bit is set in the CR4 register, explicit supervisor-mode data accesses to user-mode pages are allowed if and only if this bit is 1. See Section 4.6, “Access Rights,” in the Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A.
+这是一个只能在用户态产生的异常。
+在x86处理器初始化之后，EFLAGS寄存器的状态值为0000 0002H。所以我们仍要手动开启它。
+> The POPFD instruction pops a doubleword into the EFLAGS register. This instruction can change the state of the AC bit (bit 18) and the ID bit (bit 21), as well as the bits affected by a POPF instruction. The restrictions for changing the IOPL bits and the IF flag that were given for the POPF instruction also apply to the POPFD instruction.
+
+	asm volatile("pushfd");
     asm volatile("popl %eax");
     asm volatile("orl $0x00020000, %eax");
     asm volatile("pushl %eax");
     asm volatile("popfd");
-果然在JOS里并没有什么卵用。。。
-	+ cc[USER] user/segfault.c
+果然在JOS里并没有什么卵用。。。
+	+ cc[USER] user/segfault.c
 	{standard input}: Assembler messages:
 	{standard input}:144: Error: no such instruction: `pushfd'
 	{standard input}:169: Error: no such instruction: `popfd'
@@ -121,8 +123,10 @@
 ####18: machine check
 
 > Description
-> > Indicates that the processor detected an internal machine error or a bus error, or that an external agent detected a bus error. The machine-check exception is model-specific, available on the Pentium and later generations of processors. The implementation of the machine-check exception is different between different processor families, and these implementations may not be compatible with future Intel 64 or IA-32 processors. (Use the CPUID instruction to determine whether this feature is present.)
->> Bus errors detected by external agents are signaled to the processor on dedicated pins: the BINIT# and MCERR# pins on the Pentium 4, Intel Xeon, and P6 family processors and the BUSCHK# pin on the Pentium processor. When one of these pins is enabled, asserting the pin causes error information to be loaded into machine-check registers and a machine-check exception is generated.
+> 
+> Indicates that the processor detected an internal machine error or a bus error, or that an external agent detected a bus error. The machine-check exception is model-specific, available on the Pentium and later generations of processors. The implementation of the machine-check exception is different between different processor families, and these implementations may not be compatible with future Intel 64 or IA-32 processors. (Use the CPUID instruction to determine whether this feature is present.)
+>
+> Bus errors detected by external agents are signaled to the processor on dedicated pins: the BINIT# and MCERR# pins on the Pentium 4, Intel Xeon, and P6 family processors and the BUSCHK# pin on the Pentium processor. When one of these pins is enabled, asserting the pin causes error information to be loaded into machine-check registers and a machine-check exception is generated.
 
 所以这个异常一般是不会交给用户处理的。
 
@@ -351,6 +355,58 @@ this is illegal opcode exception handler!
 在Part 1我有讨论过，我们应该不用管它。
 
 ####INT 8: double fault
+我写了程序测试double fault，但是并没有成功。查找Intel® 64 and IA-32 Architectures Software Developer’s Manual：
+> Indicates that the processor detected a second exception while calling an exception
+handler for a prior exception. Normally, when the processor detects another exception
+while trying to call an exception handler, the two exceptions can be handled serially.
+If, however, the processor cannot handle them serially, it signals the double-fault
+exception. To determine when two faults need to be signalled as a double fault, the
+processor divides the exceptions into three classes: benign exceptions, contributory
+exceptions, and page faults.
+
+按理说divide zero是contributory exceptions，page faults遇上contributory就会double fault。
+可是运行下面的代码：
+
+```c
+	#include <inc/lib.h>
+	int zero, a;
+	void handler1(struct UTrapframe *utf){
+		cprintf("this is divide zero handler!\n");
+		exit();
+	}
+	void handler2(struct UTrapframe *utf) {
+		cprintf("this is page fault handler!\n");
+		a = 1 / zero;
+		return;
+	}
+
+	void
+	umain(int argc, char **argv)
+	{
+		set_divzero_handler(handler1);
+		set_pgfault_handler(handler2);
+		zero = 0;
+		cprintf("%s", 0xDeadBeef);
+		cprintf("%d\n", a);
+		return;
+	}
+```
+结果测试得到
+```
+[00000000] new env 00001000
+this is page fault handler!
+this is divide zero handler!
+[00001000] exiting gracefully
+[00001000] free env 00001000
+```
+并没有double fault。感觉不太合理。为什么呢？
+然后又采用int 8的方式进入double fault，然而不能进入用户注册的hanlder。
+`kernel panic on CPU 0 at kern/trap.c:409: page fault in kernel mode!`只会出内核态的page fault，我感到十分诧异，于是查询80386用户手册，发现在double fault的描述中：
+```
+Saved Instruction Pointer
+The saved contents of CS and EIP registers are undefined.
+```
+所以说用户态的东西都用不了了。。
 
 ####INT 16: floating point error
 > 4.9.3 Typical Actions of a Floating-Point Exception Handler
