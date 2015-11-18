@@ -107,7 +107,7 @@
 > The POPFD instruction pops a doubleword into the EFLAGS register. This instruction can change the state of the AC bit (bit 18) and the ID bit (bit 21), as well as the bits affected by a POPF instruction. The restrictions for changing the IOPL bits and the IF flag that were given for the POPF instruction also apply to the POPFD instruction.
 	asm volatile("pushfd");
     asm volatile("popl %eax");
-    asm volatile("orl 0x00020000, %eax");
+    asm volatile("orl $0x00020000, %eax");
     asm volatile("pushl %eax");
     asm volatile("popfd");
 果然在JOS里并没有什么卵用。。。
