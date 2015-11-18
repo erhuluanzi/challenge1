@@ -10,7 +10,7 @@ void handler(struct UTrapframe *utf){
 void
 umain(int argc, char **argv)
 {
-    set_pgfault_handler(handler);
+    set_gpfault_handler(handler);
 	asm volatile("int $14");	// page fault
 }
 

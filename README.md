@@ -51,10 +51,29 @@
 =========
 
 ### Part2: exception 10~19 survey by WuXian
+####10: invalid tss exception
+发生于tss切换或者使用tss的信息的时候。
+
+根据Intel开发手册，
+
+> The invalid-TSS handler must be a task called using a task gate. Handling this exception inside the faulting TSS context is not recommended because the processor state may not be consistent.
+
+在已经出错的上下文中进行处理是不被推荐的，因此不应该由用户态去处理这个异常。
+
+####11: segment not present
+> Indicates that the present flag of a segment or gate descriptor is clear. The processor can generate this exception during any of the following operations:
+> > * While attempting to load CS, DS, ES, FS, or GS registers. [Detection of a not-present segment while loading the SS register causes a stack fault exception (#SS) to be generated.] This situation can occur while performing a task switch.> * While attempting to load the LDTR using an LLDT instruction. Detection of a not-present LDT while loading the LDTR during a task switch operation causes an invalid-TSS exception (#TS) to be generated.> * When executing the LTR instruction and the TSS is marked not present.> * While attempting to use a gate descriptor or TSS that is marked segment-not-present, but is otherwise valid.
+> > An operating system typically uses the segment-not-present exception to implement virtual memory at the segment level. If the exception handler loads the segment and returns, the interrupted program or task resumes execution.
+> > A not-present indication in a gate descriptor, however, does not indicate that a segment is not present (because gates do not correspond to segments). The operating system may use the present flag for gate descriptors to trigger exceptions of special significance to the operating system.
+> > A contributory exception or page fault that subsequently referenced a not-present segment would cause a double fault (#DF) to be generated instead of #NP.
+
+从这一段来看，segment not present和page fault的功能类似，是用于处理段不存在的情况的。但JOS似乎没有使用段式内存管理，或者说不存在换段的情况，所以也就不会触发这个异常了。
 
 ####12: stack exception
 按理说是最容易引发的错误。。。
-然而在jos中全都被Page fault截获了。
+
+然而在jos中触发的全都是Page fault了。
+
 经历了如下尝试：
 
 1. 无穷递归爆栈。
@@ -74,6 +93,7 @@
 
 ####16: floating point exception
 最初尝试了好多方法都没能抛出浮点数异常，而且Understanding the Linux Kernel中提到会发生异常的情况也与平时经验不符（比如1.0/0.0会得到1.#inf的值，而不是抛出异常），于是去查Intel® 64 and IA-32 Architectures Software Developer’s Manual，查到了如下内容。
+
 根据intel开发手册，
 
 > Sets the FPU control, status, tag, instruction pointer, and data pointer registers to their default states. The FPU control word is set to 037FH (round to nearest, all exceptions masked, 64-bit precision). The status word is cleared (no exception flags set, TOP is set to 0). The data registers in the register stack are left unchanged, but they are all tagged as empty (11B). Both the instruction and data pointers are cleared.
@@ -97,14 +117,18 @@
 
 经查是由于工具链与内核版本不符。暂时不想去处理工具链的问题，所以在样例程序中使用了int指令替代以上操作触发异常。
 
+后来仿照bounds.c，尝试了不使用%0这样的方式传入内存地址，而是直接使用变量名，可以正常编译通过，但是无法抛出浮点数异常。
+
 ####17: alignment check
 > AC (bit 18)
 >
 > Alignment check (or access control) flag — If the AM bit is set in the CR0 register, align- ment checking of user-mode data accesses is enabled if and only if this flag is 1.
 >
 > If the SMAP bit is set in the CR4 register, explicit supervisor-mode data accesses to user-mode pages are allowed if and only if this bit is 1. See Section 4.6, “Access Rights,” in the Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A.
+
 这是一个只能在用户态产生的异常。
 在x86处理器初始化之后，EFLAGS寄存器的状态值为0000 0002H。所以我们仍要手动开启它。
+
 > The POPFD instruction pops a doubleword into the EFLAGS register. This instruction can change the state of the AC bit (bit 18) and the ID bit (bit 21), as well as the bits affected by a POPF instruction. The restrictions for changing the IOPL bits and the IF flag that were given for the POPF instruction also apply to the POPFD instruction.
 
 	asm volatile("pushfd");
@@ -112,7 +136,9 @@
     asm volatile("orl $0x00020000, %eax");
     asm volatile("pushl %eax");
     asm volatile("popfd");
+    
 果然在JOS里并没有什么卵用。。。
+
 	+ cc[USER] user/segfault.c
 	{standard input}: Assembler messages:
 	{standard input}:144: Error: no such instruction: `pushfd'
@@ -130,17 +156,16 @@
 
 所以这个异常一般是不会交给用户处理的。
 
-####19: SIMD floating point error
+####19: SIMD floating point exception
 有了处理16号异常的经验，我们可以直接去查手册了。
 
 > Bits 0 through 5 of the MXCSR register indicate whether a SIMD floating-point exception has been detected. They are “sticky” flags. That is, after a flag is set, it remains set until explicitly cleared. To clear these flags, use the LDMXCSR or the FXRSTOR instruction to write zeroes to them.
 
 > Bits 7 through 12 provide individual mask bits for the SIMD floating-point exceptions. An exception type is masked if the corresponding mask bit is set, and it is unmasked if the bit is clear. These mask bits are set upon a power-up or reset. This causes all SIMD floating-point exceptions to be initially masked.
 
+实验中遇到了和floating point exception同样的遭遇。
 
-
-
-####---------------------not finished yet-------------------------
+这个异常和16号异常的处理方式大同小异，不再重复了。
 
 =========
 
