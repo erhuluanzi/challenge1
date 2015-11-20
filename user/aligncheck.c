@@ -14,4 +14,5 @@ umain(int argc, char **argv) {
     asm volatile("orl 0x00020000, %eax");
     asm volatile("pushl %eax");
     //asm volatile("popfd");
+    //目前无法触发align check异常
 }
