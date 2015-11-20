@@ -62,12 +62,20 @@
 
 ####11: segment not present
 > Indicates that the present flag of a segment or gate descriptor is clear. The processor can generate this exception during any of the following operations:
-> > * While attempting to load CS, DS, ES, FS, or GS registers. [Detection of a not-present segment while loading the SS register causes a stack fault exception (#SS) to be generated.] This situation can occur while performing a task switch.> * While attempting to load the LDTR using an LLDT instruction. Detection of a not-present LDT while loading the LDTR during a task switch operation causes an invalid-TSS exception (#TS) to be generated.> * When executing the LTR instruction and the TSS is marked not present.> * While attempting to use a gate descriptor or TSS that is marked segment-not-present, but is otherwise valid.
-> > An operating system typically uses the segment-not-present exception to implement virtual memory at the segment level. If the exception handler loads the segment and returns, the interrupted program or task resumes execution.
-> > A not-present indication in a gate descriptor, however, does not indicate that a segment is not present (because gates do not correspond to segments). The operating system may use the present flag for gate descriptors to trigger exceptions of special significance to the operating system.
-> > A contributory exception or page fault that subsequently referenced a not-present segment would cause a double fault (#DF) to be generated instead of #NP.
+> 
+> * While attempting to load CS, DS, ES, FS, or GS registers. [Detection of a not-present segment while loading the SS register causes a stack fault exception (#SS) to be generated.] This situation can occur while performing a task switch.
+> * While attempting to load the LDTR using an LLDT instruction. Detection of a not-present LDT while loading the LDTR during a task switch operation causes an invalid-TSS exception (#TS) to be generated.
+> * When executing the LTR instruction and the TSS is marked not present.
+> * While attempting to use a gate descriptor or TSS that is marked segment-not-present, but is otherwise valid.
+> 
+> An operating system typically uses the segment-not-present exception to implement virtual memory at the segment level. If the exception handler loads the segment and returns, the interrupted program or task resumes execution.
+> 
+> A not-present indication in a gate descriptor, however, does not indicate that a segment is not present (because gates do not correspond to segments). The operating system may use the present flag for gate descriptors to trigger exceptions of special significance to the operating system.
+> 
+> A contributory exception or page fault that subsequently referenced a not-present segment would cause a double fault (#DF) to be generated instead of #NP.
 
-从这一段来看，segment not present和page fault的功能类似，是用于处理段不存在的情况的。但JOS似乎没有使用段式内存管理，或者说不存在换段的情况，所以也就不会触发这个异常了。
+从这一段来看，segment not present和page fault的功能类似，是用于处理段不存在的情况的。但JOS似乎没有使用段式内存管理，或者说不存在换段的情况，所以也就不会触发这个异常了。
+
 
 ####12: stack exception
 按理说是最容易引发的错误。。。
@@ -298,7 +306,7 @@ success!
 ```
 
 ####INT 4: overflow
-需要开启INT 4的用户权限。用普通的C语言整数加减法无法产生，因为大概会被编译器优化。所以我们就需要用内嵌汇编来实现。
+需要开启INT 4的用户权限。用普通的C语言整数加减法无法产生，因为大概会被编译器优化。所以我们就需要用内嵌汇编来实现。代码在overflow.c
 ```c
 	#include <inc/lib.h>
 	void handler(struct UTrapframe *utf) {
@@ -325,7 +333,7 @@ success!
 ```
 
 ###INT 5: bounds check
-同样需要开启INT 5的用户权限。利用BOUND语句可以产生INT 5了。
+同样需要开启INT 5的用户权限。利用BOUND语句可以产生INT 5了。代码在bound.c中。
 ```c
 	#include <inc/lib.h>
 	void handler(struct UTrapframe *utf) {
@@ -351,7 +359,7 @@ this is bound check exception handler!
 ```
 
 ####INT 6: illegal opcode
-写到这里时，编译运行发现一直都是Triple faults，想了半天都不知道为何，后来发现删除一些代码就好。我们认为原因在于这些user code目前都跟着内核被bootloader加载进内存了，当我们写的用户态程序太多时，可能空间不够于是内核加载不进去。我们只好在kern/Makefrag的文件列表中删掉之前的一些user文件夹下的文件。
+写到这里时，编译运行发现一直都是Triple faults，想了半天都不知道为何，后来发现删除一些代码就好。我们认为原因在于这些user code目前都跟着内核被bootloader加载进内存了，当我们写的用户态程序太多时，可能空间不够于是内核加载不进去。我们只好在kern/Makefrag的文件列表中删掉之前的一些user文件夹下的文件。代码在illopcd.c中
 用AVX指令集中的addpd，编译能通过，但是执行时会报illegal opcode：
 ```c
 	#include <inc/lib.h>

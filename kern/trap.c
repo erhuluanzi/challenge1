@@ -238,7 +238,7 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
-
+	cprintf("trapno: %d\n", tf->tf_trapno);
 	switch (tf->tf_trapno) {
 	case T_DIVIDE:
 		divide_zero_handler(tf);
@@ -353,6 +353,8 @@ trap(struct Trapframe *tf)
 	// fails, DO NOT be tempted to fix it by inserting a "cli" in
 	// the interrupt path.
 	assert(!(read_eflags() & FL_IF));
+	print_trapframe(tf);
+
 
 	if ((tf->tf_cs & 3) == 3) {
 		// Trapped from user mode.
@@ -727,6 +729,9 @@ void double_fault_handler(struct Trapframe *tf) {
         utf->utf_esp = tf->tf_esp;
         curenv->env_tf.tf_eip = (uintptr_t)curenv->env_dbfault_upcall;
         curenv->env_tf.tf_esp = (uintptr_t)utf;
+        cprintf("curenv status: %d\n", curenv->env_status);
+        cprintf("curenv dbfault handler: 0x%x", curenv->env_tf.tf_eip);
+       
         env_run(curenv);
     }
 
