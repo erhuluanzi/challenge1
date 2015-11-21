@@ -21,9 +21,10 @@
 // 	cprintf("%d\n", a);
 // 	return;
 // }
-
+#include <inc/lib.h>
 void handler(struct UTrapframe *utf){
  	cprintf("this is double fault handler!\n");
+ 	return;
 }
 
 void umain(int argc, char **argv) {

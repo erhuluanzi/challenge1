@@ -238,7 +238,6 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
-	cprintf("trapno: %d\n", tf->tf_trapno);
 	switch (tf->tf_trapno) {
 	case T_DIVIDE:
 		divide_zero_handler(tf);
@@ -353,8 +352,6 @@ trap(struct Trapframe *tf)
 	// fails, DO NOT be tempted to fix it by inserting a "cli" in
 	// the interrupt path.
 	assert(!(read_eflags() & FL_IF));
-	print_trapframe(tf);
-
 
 	if ((tf->tf_cs & 3) == 3) {
 		// Trapped from user mode.
